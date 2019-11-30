@@ -1,36 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <unistd.h>
+#include "queue.h"
 
-typedef struct prio_q_element {
-	void *value;
-	int priority;
-} prio_q_element_t;
-
-typedef struct prio_queue {
-	int size;
-	int items;
-	prio_q_element_t **e;	/* point to element array */
-} prio_queue_t;
-
-prio_queue_t *init_prio_queue(int initsize);
-int enqueue(prio_queue_t *queue, prio_q_element_t *element);
-prio_q_element_t *dequeue(prio_queue_t *queue);
-
-
-prio_queue_t *init_prio_queue(int initsize)
-{
-	prio_queue_t *q;
-	
-	q = (prio_queue_t*) malloc(sizeof(prio_queue_t));
-	if (!q)
-		return NULL;
-	q->size = initsize;
-	q->items = 0;
-	q->e = malloc(sizeof(prio_q_element_t*)*initsize);
-	return q;
-}
-
-int enqueue(prio_queue_t *queue, prio_q_element_t *element)
+static int enqueue(prio_queue_t *queue, prio_q_element_t *element)
 {	
 	int i, p;
 	prio_q_element_t *tmp;
@@ -61,7 +32,7 @@ int enqueue(prio_queue_t *queue, prio_q_element_t *element)
 	return 0;
 }
 
-prio_q_element_t *dequeue(prio_queue_t *queue)
+static prio_q_element_t *dequeue(prio_queue_t *queue)
 {
 	int i, cl, cr;
 	prio_q_element_t *tmp;
@@ -94,54 +65,17 @@ prio_q_element_t *dequeue(prio_queue_t *queue)
 	return e;
 }
 
-
-/* Test Code */
-
-static void show_queue(prio_queue_t *q)
+prio_queue_t *init_prio_queue(int initsize)
 {
-	prio_q_element_t **e = q->e;
-	int i;
+	prio_queue_t *q;
 	
-	for (i=0; ; i++) {
-		if (e[i])
-			printf("%d ", (int) e[i]->value);
-		else
-			break;
-	}	
-	printf("\n");
+	q = (prio_queue_t*) malloc(sizeof(prio_queue_t));
+	if (!q)
+		return NULL;
+	q->size = initsize;
+	q->items = 0;
+	q->e = malloc(sizeof(prio_q_element_t*)*initsize);
+	q->enqueue = enqueue;
+	q->dequeue = dequeue;
+	return q;
 }
-
-#define INIT_E(prio, val) \
-	e = (prio_queue_t*) malloc(sizeof(prio_q_element_t)); \
-	e->priority = prio; \
-	e->value = val; \
-	enqueue(q, e);
-
-int main(int argc, char **argv)
-{
-	prio_queue_t *q = init_prio_queue(10);
-	prio_q_element_t *e;
-	int i;
-
-	INIT_E(1, 1);
-	INIT_E(3, 3);
-	INIT_E(10, 10);
-	INIT_E(7, 7);
-	INIT_E(9, 9);
-	INIT_E(4, 4);
-	INIT_E(6, 6);
-	INIT_E(5, 5);
-	INIT_E(8, 8);
-	INIT_E(2, 2);
-	show_queue(q);
-
-	for (i=0; ; i++) {
-		if (e=dequeue(q))
-			printf("dequeue->%d\n", (int) e->value);
-		else
-			break;
-	}	
-	return 0;
-}
-
-#undef INIT_E
