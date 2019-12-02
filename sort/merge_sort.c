@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "../stack/stack.h"
 #include "sort.h"
 
 static void merge(int *a, int begin, int mid, int end)
@@ -40,4 +41,39 @@ static void sort_rec(int *a, int begin, int end)
 void merge_sort_rec(int *a, unsigned int size)
 {
 	sort_rec(a, 0, size-1);
+}
+
+void merge_sort_notrec(int *a, unsigned int size)
+{
+	stack_t *s = init_stack();
+	int pre_begin = -1;
+	int pre_end = -1;
+	int begin = 0;
+	int end = size - 1;
+	int mid;
+
+	s->push(s, 0);
+	s->push(s, size-1);
+	while (!s->empty(s)) {
+		end = s->pop(s);
+		begin = s->pop(s);
+		mid = (begin+end)/2;
+
+		if (begin >= end)
+			continue;
+		if ((end-begin == 1) ||
+				(begin<=pre_begin && pre_end<=end)) {
+			merge(a, begin, mid, end);
+			pre_begin = begin;
+			pre_end = end;
+		} else {
+			s->push(s, begin);
+			s->push(s, end);
+			s->push(s, begin);
+			s->push(s, mid);
+			s->push(s, mid+1);
+			s->push(s, end);
+			pre_begin = pre_end = -1;
+		}
+	}
 }
