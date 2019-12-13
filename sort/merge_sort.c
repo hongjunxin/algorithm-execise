@@ -61,7 +61,7 @@ void merge_sort_notrec(int *a, unsigned int size)
 
 		if (begin >= end)
 			continue;
-		if ((end-begin == 1) ||
+		else if ((end-begin == 1) ||
 				(begin<=pre_begin && pre_end<=end)) {
 			merge(a, begin, mid, end);
 			pre_begin = begin;
