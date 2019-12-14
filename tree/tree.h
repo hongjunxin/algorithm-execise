@@ -24,7 +24,7 @@ typedef struct seg_tree {
 	int *seg_arr; 	/* store segment tree nodes */
 	int seg_size;	/* seg_arr size, increase it as not big enough */
 	int (*query) (struct seg_tree *tree, int q_begin, int q_end);
-	void (*update) (struct seg_tree *tree, int index, int newvalue);
+	int (*update) (struct seg_tree *tree, int index, int newvalue);
 	void (*print) (struct seg_tree *tree);  /* for debug */
 } seg_tree_t;
 
