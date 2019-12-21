@@ -1,6 +1,23 @@
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
+typedef struct q_element {
+	void *value;
+	struct q_element *pre;  
+	struct q_element *next;  
+} q_element_t;
+
+typedef struct queue {
+	q_element_t *head;  /* dummy head, always be head */
+	q_element_t *tail;  /* dummy tail, always be tail */
+	unsigned int total;  /* number of elememts exclude head/tail */
+	int (*enqueue) (struct queue *q, void *value);
+	void *(*dequeue) (struct queue *q);
+	int (*empty) (struct queue *q);
+} queue_t;
+
+queue_t *init_queue(void);
+
 typedef struct prio_q_element {
 	void *value;
 	int priority;
