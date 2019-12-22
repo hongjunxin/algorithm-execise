@@ -17,6 +17,11 @@ static int push(stack_t *s, void *value)
 	return 0;
 }
 
+static void *peek(stack_t *s)
+{
+	return s->head->value;
+}
+
 static void *pop(stack_t *s)
 {
 	stack_elememt_t *e;
@@ -46,6 +51,7 @@ stack_t *init_stack(void)
 	s->items = 0;
 	s->head = NULL;
 	s->push = push;
+	s->peek = peek;
 	s->pop = pop;
 	s->empty = empty;
 	return s;

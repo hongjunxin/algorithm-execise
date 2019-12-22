@@ -10,6 +10,7 @@ typedef struct stack {
 	unsigned long items;
 	stack_elememt_t *head;
 	int (*push) (struct stack *s, void *value);
+	void *(*peek) (struct stack *s);
 	void *(*pop) (struct stack *s);
 	int (*empty) (struct stack *s);
 } stack_t;
