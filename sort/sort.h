@@ -9,6 +9,6 @@ void merge_sort_rec(int *a, unsigned int size);
 void merge_sort_notrec(int *a, unsigned int size);
 void quick_sort_rec(int *a, unsigned int size);
 void quick_sort_notrec(int *a, unsigned int size);
-int topo_sort(graph_t *g);
+int topo_sort(graph_t *g, char **lable_list, unsigned int size);
 
 #endif

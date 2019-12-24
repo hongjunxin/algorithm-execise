@@ -3,7 +3,7 @@
 #include "sort.h"
 #include "graph.h"
 
-int topo_sort(graph_t *g)
+int topo_sort(graph_t *g, char **lable_list, unsigned int size)
 {
 	vertex_t *v = NULL;
 	unsigned int n_visited = 0;
@@ -18,20 +18,19 @@ int topo_sort(graph_t *g)
 		return -1;
 	}
 
-	printf("%s", v->lable);
+	lable_list[--size] = v->lable;
 	v->visited = 1;
 	n_visited++;
 	while (v) {
 		for (v=g->head; v; v=v->next) {
 			if (!v->visited && !v->get_unvisited_neighbor(v)) {
-				printf("%s", v->lable);
+				lable_list[--size] = v->lable;
 				v->visited = 1;
 				n_visited++;
 				break;
 			}
 		}
 	}
-	printf("\n");
 	if (n_visited != g->nvertex) {
 		printf("Error: the graph has loop. Quit!\n");
 		exit(-1);
