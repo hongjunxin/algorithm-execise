@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../graph.h"
+#include "graph.h"
 
 int main(int argc, char **argv)
 {
@@ -12,14 +12,14 @@ int main(int argc, char **argv)
 	g->add_vertex(g, "E");
 	g->add_vertex(g, "F");
 
-	g->add_edge(g, "A", "B");
-	g->add_edge(g, "A", "C");
-	g->add_edge(g, "B", "C");
-	g->add_edge(g, "B", "D");
-	g->add_edge(g, "C", "D");
-	g->add_edge(g, "C", "E");
-	g->add_edge(g, "D", "E");
-	g->add_edge(g, "D", "F");
+	g->add_edge(g, "A", "B", 0);
+	g->add_edge(g, "A", "C", 0);
+	g->add_edge(g, "B", "C", 0);
+	g->add_edge(g, "B", "D", 0);
+	g->add_edge(g, "C", "D", 0);
+	g->add_edge(g, "C", "E", 0);
+	g->add_edge(g, "D", "E", 0);
+	g->add_edge(g, "D", "F", 0);
 
 	g->dfs(g, "F");
 	g->bfs(g, "A");

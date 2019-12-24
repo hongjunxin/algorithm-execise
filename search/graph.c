@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "../stack/stack.h"
-#include "../queue/queue.h"
+#include "stack.h"
+#include "queue.h"
 #include "graph.h"
 
 static vertex_t *get_unvisited_neighbor(vertex_t *self)
@@ -28,7 +28,7 @@ static int add_vertex(struct graph *self, char *lable)
 	for (vtmp=self->head; vtmp; vtmp=vtmp->next)
 		if (!strcmp(lable, vtmp->lable))
 			return -1;
-	
+
 	v = (vertex_t*) malloc(sizeof(vertex_t));
 	if (!v)
 		return -1;
@@ -38,11 +38,13 @@ static int add_vertex(struct graph *self, char *lable)
 	self->head = v;
 	v->neighbor = NULL;
 	v->get_unvisited_neighbor = get_unvisited_neighbor;
+	self->nvertex++;
 
 	return 0;
 }
 
-static int add_edge(struct graph *self, char *lable_a, char *lable_b)
+/* is_dir: 0--no direction. 1--has direction, lable_a to lable_b means a->b */
+static int add_edge(struct graph *self, char *lable_a, char *lable_b, int is_dir)
 {
 	vertex_t *va = NULL, *vb = NULL, *vtmp = NULL;
 	list_t *neighbor = NULL;
@@ -64,9 +66,10 @@ static int add_edge(struct graph *self, char *lable_a, char *lable_b)
 	for (neighbor=va->neighbor; neighbor; neighbor=neighbor->next)
 		if (neighbor->value == vb)
 			return -1;
-	for (neighbor=vb->neighbor; neighbor; neighbor=neighbor->next)
-		if (neighbor->value == va)
-			return -1;
+	if (!is_dir)
+		for (neighbor=vb->neighbor; neighbor; neighbor=neighbor->next)
+			if (neighbor->value == va)
+				return -1;
 	
 	neighbor = (list_t*) malloc(sizeof(list_t));
 	if (!neighbor)
@@ -74,13 +77,15 @@ static int add_edge(struct graph *self, char *lable_a, char *lable_b)
 	neighbor->value = (void*) vb;
 	neighbor->next = va->neighbor;
 	va->neighbor = neighbor;
-	
-	neighbor = (list_t*) malloc(sizeof(list_t));
-	if (!neighbor)
-		return -1;
-	neighbor->value = (void*) va;
-	neighbor->next = vb->neighbor;
-	vb->neighbor = neighbor;
+
+	if (!is_dir) {
+		neighbor = (list_t*) malloc(sizeof(list_t));
+		if (!neighbor)
+			return -1;
+		neighbor->value = (void*) va;
+		neighbor->next = vb->neighbor;
+		vb->neighbor = neighbor;
+	}
 
 	return 0;
 }
@@ -159,6 +164,7 @@ graph_t *init_graph(void)
 	if (!g)
 		return NULL;
 	g->head = NULL;
+	g->nvertex = 0;
 	g->add_vertex = add_vertex;
 	g->add_edge = add_edge;
 	g->dfs = dfs;

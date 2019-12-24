@@ -13,8 +13,9 @@ typedef struct vertex {
 
 typedef struct graph {
 	vertex_t *head;  /* save vertexs */
+	unsigned int nvertex;
 	int (*add_vertex) (struct graph *self, char *lable);
-	int (*add_edge) (struct graph *self, char *lable_a, char *lable_b);
+	int (*add_edge) (struct graph *self, char *lable_a, char *lable_b, int is_dir);
 	int (*dfs) (struct graph *self, char *lable);
 	int (*bfs) (struct graph *self, char *lable);
 } graph_t;
