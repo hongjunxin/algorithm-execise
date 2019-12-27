@@ -31,7 +31,7 @@ int topo_sort(graph_t *g, char **lable_list, unsigned int size)
 			}
 		}
 	}
-	if (n_visited != g->nvertex) {
+	if (n_visited != g->num_vertex) {
 		printf("Error: the graph has loop. Quit!\n");
 		exit(-1);
 	}

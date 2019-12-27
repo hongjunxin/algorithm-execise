@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	g->add_vertex(g, "G");
 	g->add_vertex(g, "H");
 
-	lable_list = (char**) malloc(g->nvertex*sizeof(char*));
+	lable_list = (char**) malloc(g->num_vertex*sizeof(char*));
 
 	g->add_edge(g, "A", "D", 1);
 	g->add_edge(g, "A", "E", 1);
@@ -30,8 +30,8 @@ int main(int argc, char **argv)
 	g->add_edge(g, "C", "F", 1);
 	g->add_edge(g, "F", "H", 1);
 
-	if (!topo_sort(g, lable_list, g->nvertex)) {
-		for (i=0; i<g->nvertex; i++)
+	if (!topo_sort(g, lable_list, g->num_vertex)) {
+		for (i=0; i<g->num_vertex; i++)
 			printf("%s", lable_list[i]);
 		printf("\n");
 		return 0;

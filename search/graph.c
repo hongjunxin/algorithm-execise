@@ -38,13 +38,13 @@ static int add_vertex(struct graph *self, char *lable)
 	self->head = v;
 	v->neighbor = NULL;
 	v->get_unvisited_neighbor = get_unvisited_neighbor;
-	self->nvertex++;
+	self->num_vertex++;
 
 	return 0;
 }
 
-/* is_dir: 0--no direction. 1--has direction, lable_a to lable_b means a->b */
-static int add_edge(struct graph *self, char *lable_a, char *lable_b, int is_dir)
+/* has_direction: 0--no direction. 1--has direction, lable_a to lable_b means a->b */
+static int add_edge(struct graph *self, char *lable_a, char *lable_b, int has_direction)
 {
 	vertex_t *va = NULL, *vb = NULL, *vtmp = NULL;
 	list_t *neighbor = NULL;
@@ -66,7 +66,7 @@ static int add_edge(struct graph *self, char *lable_a, char *lable_b, int is_dir
 	for (neighbor=va->neighbor; neighbor; neighbor=neighbor->next)
 		if (neighbor->value == vb)
 			return -1;
-	if (!is_dir)
+	if (!has_direction)
 		for (neighbor=vb->neighbor; neighbor; neighbor=neighbor->next)
 			if (neighbor->value == va)
 				return -1;
@@ -78,7 +78,7 @@ static int add_edge(struct graph *self, char *lable_a, char *lable_b, int is_dir
 	neighbor->next = va->neighbor;
 	va->neighbor = neighbor;
 
-	if (!is_dir) {
+	if (!has_direction) {
 		neighbor = (list_t*) malloc(sizeof(list_t));
 		if (!neighbor)
 			return -1;
@@ -164,7 +164,7 @@ graph_t *init_graph(void)
 	if (!g)
 		return NULL;
 	g->head = NULL;
-	g->nvertex = 0;
+	g->num_vertex = 0;
 	g->add_vertex = add_vertex;
 	g->add_edge = add_edge;
 	g->dfs = dfs;
