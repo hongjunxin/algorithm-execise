@@ -1,59 +1,91 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "graph.h"
 
-/* using neighbor matrix */
-typedef struct graph_matrix {
-	int **neighbor_matrix;
-	unsigned int nvertex;
-	unsigned int capacity;
-	int (*add_vertex) (struct graph_matrix *self, char *lable);
-	int (*add_edge) (struct graph_matrix *self, char *lable_a, char *lable_b, int has_direction);
-	int (*dfs) (struct graph_matrix *self, char *lable);
-	int (*bfs) (struct graph_matrix *self, char *lable);
-} graph_matrix_t;
-
-
-graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
+static void print_neighbor_matrix(graph_matrix_t *g)
 {
-	int i;
-	graph_matrix_t *g;
+	int i, j;
 
-	g = (graph_matrix_t*) malloc(sizeof(graph_matrix_t));
-	g->neighbor_matrix = (int**) malloc(sizeof(int*)*init_capacity);
-	if (!g)
-		return NULL;
-	for (i=0; i<init_capacity; i++) {
-		g->neighbor_matrix[i] = (int*) malloc(sizeof(int)*init_capacity);
-		if (!g->neighbor_matrix[i])
-			return NULL;
+	printf("neighbor matrix\n");
+	for (i=0; i<g->num_vertex; i++) {
+		printf("%s: ", g->vertex_array[i]->lable);
+		for (j=0; j<g->num_vertex; j++) {
+			printf("%d ", g->neighbor_matrix[i][j]);
+			if (j==g->num_vertex-1)
+				printf("\n");
+		}
 	}
-	g->capacity = init_capacity;
-	g->nvertex = 0;
+	printf("\n");
+}
 
-	return g;
+static void print_linked_matrix(graph_matrix_t *g, int **linked_matrix)
+{
+	int i, j;
+
+	printf("linked matrix\n");
+	for (i=0; i<g->num_vertex; i++) {
+		printf("%s: ", g->vertex_array[i]->lable);
+		for (j=0; j<g->num_vertex; j++) {
+			printf("%d ", linked_matrix[i][j]);
+			if (j==g->num_vertex-1)
+				printf("\n");
+		}
+	}
+	printf("\n");
 }
 
 int main(int argc, char **argv)
 {
-	int i, j;
-	graph_matrix_t *g = init_graph_matrix(4);
+	graph_matrix_t *g = init_graph_matrix(6);
 
-	if (!g) {
-		printf("init graph failed\n");
-		exit(-1);
-	}
-	
-	for (i=0; i<g->capacity; i++)
-		for (j=0; j<g->capacity; j++)
-			g->neighbor_matrix[i][j] = j;
+	g->add_vertex(g, "A");
+	g->add_vertex(g, "B");
+	g->add_vertex(g, "C");
+	g->add_vertex(g, "D");
+	g->add_vertex(g, "E");
+	g->add_vertex(g, "F");
 
-	for (i=0; i<g->capacity; i++)
-		for (j=0; j<g->capacity; j++) {
-			printf("%d ", g->neighbor_matrix[i][j]);
-			if (j == g->capacity-1)
-				printf("\n");
-		}
+	g->add_edge(g, "A", "B", 0);
+	g->add_edge(g, "A", "C", 0);
+	g->add_edge(g, "B", "C", 0);
+	g->add_edge(g, "B", "D", 0);
+	g->add_edge(g, "C", "D", 0);
+	g->add_edge(g, "C", "E", 0);
+	g->add_edge(g, "D", "E", 0);
+	g->add_edge(g, "D", "F", 0);
+
+	g->add_vertex(g, "H");
+	g->add_edge(g, "E", "H", 0);
+
+	printf("DFS from F: ");
+	g->dfs(g, "F");
+	printf("BFS from A: ");
+	g->bfs(g, "A");
 	printf("\n");
+
+	graph_matrix_t *g2 = init_graph_matrix(5);
+	int ** linked_matrix;
+	int i;
+	
+	g2->add_vertex(g2, "A");
+	g2->add_vertex(g2, "B");
+	g2->add_vertex(g2, "C");
+	g2->add_vertex(g2, "D");
+	g2->add_vertex(g2, "E");
+	g2->add_edge(g2, "B", "A", 1);
+	g2->add_edge(g2, "A", "C", 1);
+	g2->add_edge(g2, "B", "E", 1);
+	g2->add_edge(g2, "E", "C", 1);
+	g2->add_edge(g2, "D", "E", 1);
+
+	linked_matrix = (int**) malloc(g2->num_vertex*sizeof(int*));
+	for (i=0; i<g2->num_vertex; i++)
+		linked_matrix[i] = (int*) calloc(0, g2->num_vertex*sizeof(int));
+	g2->warshall(g2, linked_matrix, g2->num_vertex);
+	print_neighbor_matrix(g2);
+	print_linked_matrix(g2, linked_matrix);
+		
 	return 0;
 }
+

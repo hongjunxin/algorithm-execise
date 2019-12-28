@@ -6,10 +6,10 @@
 typedef struct vertex {
 	char *lable;
 	unsigned short visited;  /* 0--unvisited, 1--visited */
-	struct vertex *(*get_unvisited_neighbor) (struct vertex *self);
 	/* the following fields is for graph_t */
 	struct vertex *next;
 	list_t *neighbor;
+	struct vertex *(*get_unvisited_neighbor) (struct vertex *self);
 } vertex_t;
 
 /* using neighbor list */
@@ -34,6 +34,7 @@ typedef struct graph_matrix {
 	int (*add_edge) (struct graph_matrix *self, char *lable_a, char *lable_b, int has_direction);
 	int (*dfs) (struct graph_matrix *self, char *lable);
 	int (*bfs) (struct graph_matrix *self, char *lable);
+	int (*warshall) (struct graph_matrix *self, int **linked_matrix, unsigned int size);
 } graph_matrix_t;
 
 graph_matrix_t *init_graph_matrix(unsigned int init_capacity);
