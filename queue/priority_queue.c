@@ -1,16 +1,18 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include "queue.h"
 
 static int enqueue(prio_queue_t *queue, prio_q_element_t *element)
 {	
 	int i, p;
 	prio_q_element_t *tmp;
-	
+	prio_q_element_t **element_array;
+
 	if (queue->size == queue->items) {
-		tmp = queue->e;
-		queue->e = (prio_q_element_t*) realloc(queue->e, queue->size*2);
+		element_array = queue->e;
+		queue->e = (prio_q_element_t**) realloc(queue->e, queue->size*2);
 		if (!queue->e) {
-			queue->e = tmp;
+			queue->e = element_array;
 			return -1;
 		}
 		queue->size *= 2;
@@ -65,6 +67,11 @@ static prio_q_element_t *dequeue(prio_queue_t *queue)
 	return e;
 }
 
+static int empty(prio_queue_t *q)
+{
+	return (q->items == 0);
+}
+
 prio_queue_t *init_prio_queue(int initsize)
 {
 	prio_queue_t *q;
@@ -74,8 +81,10 @@ prio_queue_t *init_prio_queue(int initsize)
 		return NULL;
 	q->size = initsize;
 	q->items = 0;
-	q->e = malloc(sizeof(prio_q_element_t*)*initsize);
+	q->e = (prio_q_element_t**) malloc(sizeof(prio_q_element_t*)*initsize);
 	q->enqueue = enqueue;
 	q->dequeue = dequeue;
+	q->empty = empty;
+	
 	return q;
 }

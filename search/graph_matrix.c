@@ -63,6 +63,7 @@ static int add_vertex(graph_matrix_t *self, char *lable)
 		return -1;
 	v->lable = lable;
 	v->visited = 0;
+	v->index = self->num_vertex;
 	self->vertex_array[self->num_vertex++] = v;
 	return 0;
 }
@@ -90,6 +91,24 @@ static int add_edge(graph_matrix_t *self, char *lable_a, char *lable_b, int has_
 	self->neighbor_matrix[a][b] = 1;  /* means a has a neighbor named b */
 	if (!has_direction)
 		self->neighbor_matrix[b][a] = 1;
+
+	return 0;
+}
+
+static int add_edge_with_weight(graph_matrix_t *self, char *lable_a, char *lable_b, 
+		int has_direction, int weight)
+{
+	int a, b;
+
+	if (!self || !lable_a || !lable_b || !strcmp(lable_a, lable_b))
+		return -1;
+	a = get_vertex_index(self, lable_a);
+	b = get_vertex_index(self, lable_b);
+	if (a == -1 || b == -1)
+		return -1;
+	self->neighbor_matrix[a][b] = weight;
+	if (!has_direction)
+		self->neighbor_matrix[b][a] = weight;
 
 	return 0;
 }
@@ -196,6 +215,101 @@ static int warshall(struct graph_matrix *self, int **linked_matrix, unsigned int
 	return 0;
 }
 
+static void print_mst(struct graph_matrix *g)
+{
+	edge_t *edge;
+	int total_weight = 0;
+	
+	while (!g->mst->empty(g->mst)) {
+		edge = (edge_t*) g->mst->dequeue(g->mst);
+		printf("%s%s(%d) ", edge->a->lable, edge->b->lable, edge->weight);
+		total_weight += edge->weight;
+	}
+	printf("\ntotal weight: %d\n", total_weight);
+}
+
+static void enqueue_unvisited_neighbor(struct graph_matrix *g, vertex_t *v, prio_queue_t *prio_q)
+{
+	vertex_t *unvisited_neighbor;
+	edge_t *edge;
+	prio_q_element_t *prio_q_element;
+	int weight, v_index, i;
+
+	v_index = get_vertex_index(g, v->lable);
+	for (i=0; i<g->num_vertex; i++) {
+		if (g->neighbor_matrix[v_index][i] && !g->vertex_array[i]->visited) {
+			unvisited_neighbor =  g->vertex_array[i];
+			weight = g->neighbor_matrix[v->index][unvisited_neighbor->index];
+			edge = (edge_t*) malloc(sizeof(edge_t));
+			edge->weight = weight;
+			edge->a = v;
+			edge->b = unvisited_neighbor;
+			prio_q_element = (prio_q_element_t*) malloc(sizeof(prio_q_element_t));
+			/* So far the implement of prio_queue_t is that the top priority element 
+			   has the biggest priority value */
+			prio_q_element->priority = -weight;
+			prio_q_element->value = (void*) edge; 
+			prio_q->enqueue(prio_q, prio_q_element);
+		}	
+	}
+}
+
+static int generate_weight_mst(struct graph_matrix *self, char *begin_lable)
+{
+	int v_index;
+	vertex_t *v;
+	edge_t *edge;
+	prio_queue_t *prio_q;
+	prio_q_element_t *prio_q_element;
+
+	v_index = get_vertex_index(self, begin_lable);
+	if (v_index == -1)
+		return -1;
+	self->mst = init_queue();
+	prio_q = init_prio_queue(20);
+	v = self->vertex_array[v_index];
+	v->visited = 1;
+	enqueue_unvisited_neighbor(self, v, prio_q);
+	while (!prio_q->empty(prio_q)) {
+		prio_q_element = (prio_q_element_t*) prio_q->dequeue(prio_q);
+		edge = (edge_t*) prio_q_element->value;
+		if (!edge->a->visited) {
+			printf("graph vertex info error\n");
+			exit(-1);
+		}
+		if (edge->b->visited) {
+			continue;
+		} else {
+			edge->b->visited = 1;
+			enqueue_unvisited_neighbor(self, edge->b, prio_q);
+		}
+		self->mst->enqueue(self->mst, (void*) edge);
+	}
+	
+	print_mst(self);
+	return 0;
+}
+
+static void print_neighbor_matrix(graph_matrix_t *self)
+{
+	int i, j;
+
+	printf("[neighbor matrix]\n");
+	printf("   ");
+	for (i=0; i<self->num_vertex; i++)
+		printf("%s\t", self->vertex_array[i]->lable);
+	printf("\n");
+	for (i=0; i<self->num_vertex; i++) {
+		printf("%s: ", self->vertex_array[i]->lable);
+		for (j=0; j<self->num_vertex; j++) {
+			printf("%d\t", self->neighbor_matrix[i][j]);
+			if (j==self->num_vertex-1)
+				printf("\n");
+		}
+	}
+	printf("\n");
+}
+
 graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
 {
 	int i, j;
@@ -216,10 +330,13 @@ graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
 	if (!g->vertex_array)
 		goto error_free;
 	g->add_vertex = add_vertex;
+	g->add_edge_with_weight = add_edge_with_weight;
 	g->add_edge = add_edge;
 	g->dfs = dfs;
 	g->bfs = bfs;
 	g->warshall = warshall;
+	g->generate_weight_mst = generate_weight_mst;
+	g->print_neighbor_matrix = print_neighbor_matrix;
 	g->capacity = init_capacity;
 	g->num_vertex = 0;
 

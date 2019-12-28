@@ -29,6 +29,7 @@ typedef struct prio_queue {
 	prio_q_element_t **e;
 	int (*enqueue) (struct prio_queue *queue, prio_q_element_t *element);
 	prio_q_element_t *(*dequeue) (struct prio_queue *queue);
+	int (*empty) (struct prio_queue *queue);
 } prio_queue_t;
 
 prio_queue_t *init_prio_queue(int initsize);

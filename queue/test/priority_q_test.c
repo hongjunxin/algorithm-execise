@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "../queue.h"
 
 /* Test Code */
@@ -17,9 +18,9 @@ static void show_queue(prio_queue_t *q)
 }
 
 #define INIT_E(prio, val) \
-    e = (prio_queue_t*) malloc(sizeof(prio_q_element_t)); \
+    e = (prio_q_element_t*) malloc(sizeof(prio_q_element_t)); \
     e->priority = prio; \
-    e->value = val; \
+    e->value = (void*) val; \
     q->enqueue(q, e);
 
 int main(int argc, char **argv)

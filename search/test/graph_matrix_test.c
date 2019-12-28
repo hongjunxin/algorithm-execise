@@ -3,31 +3,19 @@
 #include <stdlib.h>
 #include "graph.h"
 
-static void print_neighbor_matrix(graph_matrix_t *g)
-{
-	int i, j;
-
-	printf("neighbor matrix\n");
-	for (i=0; i<g->num_vertex; i++) {
-		printf("%s: ", g->vertex_array[i]->lable);
-		for (j=0; j<g->num_vertex; j++) {
-			printf("%d ", g->neighbor_matrix[i][j]);
-			if (j==g->num_vertex-1)
-				printf("\n");
-		}
-	}
-	printf("\n");
-}
-
 static void print_linked_matrix(graph_matrix_t *g, int **linked_matrix)
 {
 	int i, j;
 
-	printf("linked matrix\n");
+	printf("[linked matrix]\n");
+	printf("   ");
+	for (i=0; i<g->num_vertex; i++)
+		printf("%s\t", g->vertex_array[i]->lable);
+	printf("\n");
 	for (i=0; i<g->num_vertex; i++) {
 		printf("%s: ", g->vertex_array[i]->lable);
 		for (j=0; j<g->num_vertex; j++) {
-			printf("%d ", linked_matrix[i][j]);
+			printf("%d\t", linked_matrix[i][j]);
 			if (j==g->num_vertex-1)
 				printf("\n");
 		}
@@ -83,7 +71,7 @@ int main(int argc, char **argv)
 	for (i=0; i<g2->num_vertex; i++)
 		linked_matrix[i] = (int*) calloc(0, g2->num_vertex*sizeof(int));
 	g2->warshall(g2, linked_matrix, g2->num_vertex);
-	print_neighbor_matrix(g2);
+	g2->print_neighbor_matrix(g2);
 	print_linked_matrix(g2, linked_matrix);
 		
 	return 0;
