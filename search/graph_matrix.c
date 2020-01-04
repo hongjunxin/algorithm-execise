@@ -284,6 +284,7 @@ static int generate_weight_mst(struct graph_matrix *self, char *begin_lable)
 			enqueue_unvisited_neighbor(self, edge->b, prio_q);
 		}
 		self->mst->enqueue(self->mst, (void*) edge);
+		free(prio_q_element);
 	}
 	
 	print_mst(self);
@@ -308,6 +309,64 @@ static void print_neighbor_matrix(graph_matrix_t *self)
 		}
 	}
 	printf("\n");
+}
+
+int dijkstra(struct graph_matrix *self, char *begin_lable, dijkstra_path_info_t *ret)
+{
+	int begin_index, i, weight, weight_tmp;
+	vertex_t *vertex_tmp;
+	prio_queue_t *prio_q;
+	prio_q_element_t *prio_q_e;
+	
+	if (!self || !begin_lable || !ret)
+		return -1;
+	begin_index = get_vertex_index(self, begin_lable);
+	if (begin_index == -1)
+		return -1;
+	prio_q = init_prio_queue(20);
+	for (i=0; i<self->num_vertex; i++) {
+		ret[i].weight = self->neighbor_matrix[begin_index][i];
+		ret[i].vertex = self->vertex_array[i];
+	}
+
+	self->vertex_array[begin_index]->visited = 1;	
+	for (i=0; i<self->num_vertex; i++) {
+		if (ret[i].weight) {
+			ret[i].pre_vertex = self->vertex_array[begin_index];
+			prio_q_e = (prio_q_element_t*) malloc(sizeof(prio_q_element_t));
+			prio_q_e->priority = -ret[i].weight;
+			prio_q_e->value = (void*) self->vertex_array[i];
+			prio_q->enqueue(prio_q, prio_q_e);
+		}
+	}
+	while (!prio_q->empty(prio_q)) {
+		prio_q_e = (prio_q_element_t*) prio_q->dequeue(prio_q);
+		vertex_tmp = (vertex_t*) prio_q_e->value;
+		free(prio_q_e);
+		if (vertex_tmp->visited)
+			continue;
+		vertex_tmp->visited = 1;
+		for (i=0; i<self->num_vertex; i++) {
+			if ((weight=self->neighbor_matrix[vertex_tmp->index][i]) > 0 &&
+				 		!self->vertex_array[i]->visited) {	
+				 weight_tmp = ret[vertex_tmp->index].weight + weight;
+				 /* if A can't go to B at beginning we set weight to 0 */
+				 if (weight_tmp < ret[i].weight || ret[i].weight == 0) {
+					ret[i].weight = weight_tmp;
+				 	ret[i].pre_vertex = vertex_tmp;
+				 	prio_q_e = (prio_q_element_t*) malloc(sizeof(prio_q_element_t));
+					prio_q_e->priority = -weight_tmp;
+					prio_q_e->value = (void*)self->vertex_array[i];
+					prio_q->enqueue(prio_q, prio_q_e);
+				 }
+			}
+		}
+	}
+
+	for (i=0; i<self->num_vertex; i++)
+		self->vertex_array[i]->visited = 0;
+	free(prio_q);
+	return 0;
 }
 
 graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
@@ -337,6 +396,7 @@ graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
 	g->warshall = warshall;
 	g->generate_weight_mst = generate_weight_mst;
 	g->print_neighbor_matrix = print_neighbor_matrix;
+	g->dijkstra = dijkstra;
 	g->capacity = init_capacity;
 	g->num_vertex = 0;
 

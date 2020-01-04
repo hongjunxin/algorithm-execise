@@ -11,6 +11,7 @@ all:
 	gcc -g $(INCLUDE) $(SRC_EXT) ../graph.c graph_test.c -o graph_test.out
 	gcc -g $(INCLUDE) $(SRC_EXT) ../graph_matrix.c graph_matrix_test.c -o graph_matrix_test.out
 	gcc -g $(INCLUDE) $(SRC_EXT) ../graph_matrix.c generate_mst_test.c -o generate_mst_test.out
+	gcc -g $(INCLUDE) $(SRC_EXT) ../graph_matrix.c dijkstra_test.c -o dijkstra_test.out
 	
 clean:
 	@rm *.out

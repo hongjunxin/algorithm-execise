@@ -26,6 +26,12 @@ typedef struct graph {
 
 graph_t *init_graph(void);
 
+typedef struct {
+	int weight;
+	vertex_t *vertex;
+	vertex_t *pre_vertex;
+} dijkstra_path_info_t;
+
 /* using neighbor matrix */
 typedef struct graph_matrix {
 	int **neighbor_matrix;
@@ -42,6 +48,7 @@ typedef struct graph_matrix {
 	int (*warshall) (struct graph_matrix *self, int **linked_matrix, unsigned int size);
 	/* mst -- minimun spanning tree */
 	int (*generate_weight_mst) (struct graph_matrix *self, char *begin_lable);
+	int (*dijkstra) (struct graph_matrix *self, char *begin_lable, dijkstra_path_info_t *ret);
 	void (*print_neighbor_matrix) (struct graph_matrix *self);  /* for debug */
 } graph_matrix_t;
 
