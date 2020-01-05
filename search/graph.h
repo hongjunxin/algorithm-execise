@@ -49,6 +49,7 @@ typedef struct graph_matrix {
 	/* mst -- minimun spanning tree */
 	int (*generate_weight_mst) (struct graph_matrix *self, char *begin_lable);
 	int (*dijkstra) (struct graph_matrix *self, char *begin_lable, dijkstra_path_info_t *ret);
+	int (*floyd) (struct graph_matrix *self, int **linked_matrix, unsigned int size);
 	void (*print_neighbor_matrix) (struct graph_matrix *self);  /* for debug */
 } graph_matrix_t;
 

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 #include "stack.h"
 #include "queue.h"
 #include "graph.h"
@@ -193,6 +194,10 @@ static int bfs(graph_matrix_t *self, char *lable)
 	return 0;
 }
 
+/* 
+ * In none weight graph, we use 0 to present A can't go to B,
+ * 1 to present A can go to B. 
+ */
 static int warshall(struct graph_matrix *self, int **linked_matrix, unsigned int size)
 {
 	int i, j, k;
@@ -206,12 +211,46 @@ static int warshall(struct graph_matrix *self, int **linked_matrix, unsigned int
 			linked_matrix[i][j] = self->neighbor_matrix[i][j];
 
 	/* Warshall */
+	/* a[i][k] + a[k][j] => a[i][j] */
+	for (k=0; k<size; k++)
+		for (i=0; i<size; i++)
+			for (j=0; j<size; j++) {
+				if (i == j)
+					continue;  /* linked_matrix[i][i] must be infinite so pass it */
+				if (linked_matrix[i][k] && linked_matrix[k][j])
+					linked_matrix[i][j] = 1;
+			}	
+	return 0;
+}
+
+static int floyd(struct graph_matrix *self, int **linked_matrix, unsigned int size)
+{
+	int i, j, k, sum;
+	
+	if (!linked_matrix || !size)
+		return -1;
+
+	/* copy neighbor_matrix to linked_matrix */
 	for (i=0; i<size; i++)
-		for (j=0; j<size; j++)
-			if (self->neighbor_matrix[i][j] == 1)
-				for (k=0; k<size; k++)
-					if (self->neighbor_matrix[j][k] == 1)
-						linked_matrix[i][k] = 1;
+		for (j=0; j<size; j++) {
+			linked_matrix[i][j] = self->neighbor_matrix[i][j];
+			/* if A can't go to B at beginning we set weight to 0 */
+			if (linked_matrix[i][j] == 0)
+				linked_matrix[i][j] = INT_MAX;  /* INT_MAX means infinite */
+		}	
+
+	/* Floyd */
+	for (k=0; k<size; k++)
+		for (i=0; i<size; i++)
+			for (j=0; j<size; j++) {
+				if (i == j)
+					continue;  /* linked_matrix[i][i] must be infinite so pass it */
+				if (linked_matrix[i][k] < INT_MAX && 
+						linked_matrix[k][j] < INT_MAX &&
+						linked_matrix[i][j] > linked_matrix[i][k] + linked_matrix[k][j])
+					linked_matrix[i][j] = linked_matrix[i][k] + linked_matrix[k][j];
+			}		
+
 	return 0;
 }
 
@@ -397,6 +436,7 @@ graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
 	g->generate_weight_mst = generate_weight_mst;
 	g->print_neighbor_matrix = print_neighbor_matrix;
 	g->dijkstra = dijkstra;
+	g->floyd = floyd;
 	g->capacity = init_capacity;
 	g->num_vertex = 0;
 
