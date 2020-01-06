@@ -213,13 +213,14 @@ static int warshall(struct graph_matrix *self, int **linked_matrix, unsigned int
 	/* Warshall */
 	/* a[i][k] + a[k][j] => a[i][j] */
 	for (k=0; k<size; k++)
-		for (i=0; i<size; i++)
+		for (i=0; i<size; i++) {
+			if (linked_matrix[i][k] == 0) continue;
 			for (j=0; j<size; j++) {
-				if (i == j)
-					continue;  /* linked_matrix[i][i] must be infinite so pass it */
+				if (i==j) continue;  /* linked_matrix[i][i] must be infinite so pass it */
 				if (linked_matrix[i][k] && linked_matrix[k][j])
-					linked_matrix[i][j] = 1;
+					linked_matrix[i][j] = 1;	
 			}	
+		}
 	return 0;
 }
 
@@ -241,16 +242,16 @@ static int floyd(struct graph_matrix *self, int **linked_matrix, unsigned int si
 
 	/* Floyd */
 	for (k=0; k<size; k++)
-		for (i=0; i<size; i++)
+		for (i=0; i<size; i++) {
+			if (linked_matrix[i][k] == INT_MAX) continue;
 			for (j=0; j<size; j++) {
-				if (i == j)
-					continue;  /* linked_matrix[i][i] must be infinite so pass it */
+				if (i == j) continue;  /* linked_matrix[i][i] must be infinite so pass it */
 				if (linked_matrix[i][k] < INT_MAX && 
 						linked_matrix[k][j] < INT_MAX &&
 						linked_matrix[i][j] > linked_matrix[i][k] + linked_matrix[k][j])
 					linked_matrix[i][j] = linked_matrix[i][k] + linked_matrix[k][j];
 			}		
-
+		}
 	return 0;
 }
 
