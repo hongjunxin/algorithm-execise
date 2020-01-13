@@ -416,15 +416,15 @@ graph_matrix_t *init_graph_matrix(unsigned int init_capacity)
 	g = (graph_matrix_t*) malloc(sizeof(graph_matrix_t));
 	if (!g)
 		goto error_free;
-	g->neighbor_matrix = (int**) malloc(sizeof(int*)*init_capacity);
+	g->neighbor_matrix = (int**) calloc(init_capacity, sizeof(int*));
 	if (!g->neighbor_matrix) 
 		goto error_free;
 	for (i=0; i<init_capacity; i++) {
-		g->neighbor_matrix[i] = (int*) calloc(0, sizeof(int)*init_capacity);
+		g->neighbor_matrix[i] = (int*) calloc(init_capacity, sizeof(int));
 		if (!g->neighbor_matrix[i])
 			goto error_free;
 	}
-	g->vertex_array = (vertex_t**) malloc(sizeof(vertex_t*)*init_capacity);
+	g->vertex_array = (vertex_t**) calloc(init_capacity, sizeof(vertex_t*));
 	if (!g->vertex_array)
 		goto error_free;
 	g->add_vertex = add_vertex;
