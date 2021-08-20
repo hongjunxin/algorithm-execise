@@ -22,6 +22,7 @@ struct mcdn_lru_s {
 
     void* (*set)(mcdn_lru_t *self, int key, ngx_str_t *key_name, void *value);
     void* (*get)(mcdn_lru_t *self, int key, ngx_str_t *key_name);
+    void* (*delete)(mcdn_lru_t *self, int key, ngx_str_t *key_name);
 };
 
 struct mcdn_lru_bucket_elt_s {

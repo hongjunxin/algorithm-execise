@@ -11,7 +11,8 @@ typedef struct {
     ngx_str_t client_ip;
 } mcdn_auth_info_t;
 
-#define NUM 10*1024
+#define BUCKET_SIZE 5
+#define NUM         10 * BUCKET_SIZE
 
 static void print_lru(mcdn_lru_t *lru);
 
@@ -28,7 +29,7 @@ int main(int argc, char **argv)
     unsigned long t, get_time, set_time;
     void *ret;
 
-    lru = mcdn_lru_init(NUM, 1024);
+    lru = mcdn_lru_init(NUM, BUCKET_SIZE);
     if (lru == NULL) {
         printf("%s failed\n", __FUNCTION__);
     }   
@@ -38,6 +39,8 @@ int main(int argc, char **argv)
         tokens[i].data = calloc(32, sizeof(char));
         tokens[i].len = 32;
     }
+
+    /* set test */
 
     for (i = 0; i < NUM; ++i) {
         gettimeofday(&now, NULL);
@@ -66,10 +69,12 @@ int main(int argc, char **argv)
         usleep(2000);
     }
 
-    printf("printf_lru #1 ===\n");
+    printf("=== printf_lru #1 ===\n");
     print_lru(lru);
 
-    for (int i = 0; i < NUM; ++i) {
+    /* get test */
+
+    for (i = 0; i < NUM; ++i) {
         key = ngx_hash_key_lc(tokens[i].data, tokens[i].len);
         if (key < 0) {
             key *= -1;
@@ -90,7 +95,63 @@ int main(int argc, char **argv)
         }
     }
 
-    /* get test */
+    printf("=== printf_lru #2 ===\n");
+    print_lru(lru);
+
+    /* delete test */
+
+    int delcnt = NUM / 2;
+
+    for (i = 0; i < delcnt; ++i) {
+        key = ngx_hash_key_lc(tokens[i].data, tokens[i].len);
+        if (key < 0) {
+            key *= -1;
+        }
+
+        ret = lru->delete(lru, key, &tokens[i]);
+        if (ret == NULL) {
+            printf("lru->delete test failed, should not return null, line=%d\n", __LINE__);
+            exit(-1);
+        }
+
+        free(ret);
+
+        if (lru->get(lru, key, &tokens[i]) != NULL) {
+            printf("lru->delete test failed, line=%d\n", __LINE__);
+            exit(-1);            
+        }
+    }
+
+    if (lru->nelts + delcnt != NUM) {
+        printf("lru->delete test failed, line=%d\n", __LINE__);
+        exit(-1);
+    }
+
+    printf("=== printf_lru #3 ===\n");
+    print_lru(lru);
+
+    /* single set time test */
+    info = calloc(1, sizeof(mcdn_auth_info_t));
+    info->valid = 0;
+
+    gettimeofday(&t1, NULL);
+    ret = lru->set(lru, key, &copy_t, info);
+    gettimeofday(&t2, NULL);
+
+    if (ret == NULL) {
+        printf("set test failed, line=%d\n", __LINE__);
+        exit(-1);
+    } else if (ret != info) {
+        free(ret);
+    }
+
+    set_time = (t2.tv_sec - t1.tv_sec) * 1000000 + (t2.tv_usec - t1.tv_usec);
+
+    printf("=== printf_lru #4 ===\n");
+    print_lru(lru);
+
+    /* single get time test */
+
     key = ngx_hash_key_lc(copy_t.data, copy_t.len);
     if (key < 0) {
         key *= -1;
@@ -101,9 +162,6 @@ int main(int argc, char **argv)
     gettimeofday(&t2, NULL);
 
     get_time = (t2.tv_sec - t1.tv_sec) * 1000000 + (t2.tv_usec - t1.tv_usec);
-
-    printf("printf_lru #2 ===\n");
-    print_lru(lru);
 
     copy_t.data[0] = '#';
     key = ngx_hash_key_lc(copy_t.data, copy_t.len);
@@ -116,24 +174,7 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    /* set test */
-    info = calloc(1, sizeof(mcdn_auth_info_t));
-    info->valid = 0;
-
-    gettimeofday(&t1, NULL);
-    ret = lru->set(lru, key, &copy_t, info);
-    gettimeofday(&t2, NULL);
-
-    if (ret == info) {
-        printf("set test failed, line=%d\n", __LINE__);
-        exit(-1);
-    } else {
-        free(ret);
-    }
-
-    set_time = (t2.tv_sec - t1.tv_sec) * 1000000 + (t2.tv_usec - t1.tv_usec);
-
-    printf("printf_lru #4 ===\n");
+    printf("=== printf_lru #5 ===\n");
     print_lru(lru);
 
     printf("\n=== lru test pass ===\n");
@@ -149,7 +190,8 @@ int main(int argc, char **argv)
 
 static void print_lru(mcdn_lru_t *lru)
 {
-    printf("lru capacity=%d bucket_size=%d\n\n", lru->capacity, lru->bucket_size);
+    printf("lru capacity=%d bucket_size=%d nelts=%d;\n\n", 
+        lru->capacity, lru->bucket_size, lru->nelts);
 
     int i;
     ngx_queue_t *head, *q;

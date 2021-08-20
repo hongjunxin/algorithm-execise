@@ -8,6 +8,7 @@
 
 static void* mcdn_lru_set(mcdn_lru_t *lru, int key, ngx_str_t *key_name, void *value);
 static void* mcdn_lru_get(mcdn_lru_t *lru, int key, ngx_str_t *key_name);
+static void* mcdn_lru_delete(mcdn_lru_t *lru, int key, ngx_str_t *key_name);
 
 mcdn_lru_t* mcdn_lru_init(int capacity, int bucket_size)
 {
@@ -41,6 +42,7 @@ mcdn_lru_t* mcdn_lru_init(int capacity, int bucket_size)
 
     lru->set = mcdn_lru_set;
     lru->get = mcdn_lru_get;
+    lru->delete = mcdn_lru_delete;
 
     return lru;
 }
@@ -140,4 +142,48 @@ static void* mcdn_lru_get(mcdn_lru_t *lru, int key, ngx_str_t *key_name)
 	}
     
     return NULL;
+}
+
+static void* mcdn_lru_delete(mcdn_lru_t *lru, int key, ngx_str_t *key_name)
+{
+    void *ret;
+    ngx_queue_t *head, *q;
+    mcdn_lru_bucket_elt_t *bucket_node;
+    mcdn_lru_list_elt_t *list_node;
+
+    ret = NULL;
+
+    head = &lru->bucket[key % lru->bucket_size];
+	if (ngx_queue_empty(head)) {
+		return NULL;
+	}
+
+	q = ngx_queue_head(head);
+
+	while (q != head) {
+		bucket_node = ngx_queue_data(q, mcdn_lru_bucket_elt_t, queue);
+
+		if (bucket_node->key == key &&
+                bucket_node->key_name.len == key_name->len &&
+				memcmp(bucket_node->key_name.data, key_name->data, key_name->len) == 0) {
+
+            ret = bucket_node->value;            
+            list_node = bucket_node->list_elt;
+
+            ngx_queue_remove(&list_node->queue);
+            ngx_queue_remove(&bucket_node->queue);
+
+            free(bucket_node->key_name.data);
+            free(bucket_node);
+            free(list_node);
+
+            lru->nelts--;
+
+            break;
+		}
+
+		q = ngx_queue_next(q);
+	}
+    
+    return ret;
 }
