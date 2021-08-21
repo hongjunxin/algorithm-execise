@@ -25,7 +25,8 @@ int main(int argc, char **argv)
     char msec[14];
     ngx_str_t tokens[NUM], copy_t;
     struct timeval now, t1, t2;
-    int i, key;
+    int i;
+    unsigned int key;
     unsigned long t, get_time, set_time;
     void *ret;
 
@@ -50,9 +51,6 @@ int main(int argc, char **argv)
         md5(tokens[i].data, tokens[i].len, msec, strlen(msec));
 
         key = ngx_hash_key_lc(tokens[i].data, tokens[i].len);
-        if (key < 0) {
-            key *= -1;
-        }
 
         infos[i]->valid = 1;
         ret = lru->set(lru, key, &tokens[i], infos[i]);
@@ -76,9 +74,7 @@ int main(int argc, char **argv)
 
     for (i = 0; i < NUM; ++i) {
         key = ngx_hash_key_lc(tokens[i].data, tokens[i].len);
-        if (key < 0) {
-            key *= -1;
-        }
+
         if (lru->get(lru, key, &tokens[i]) == NULL) {
             printf("lru->get test failed, line=%d\n", __LINE__);
             exit(-1);
@@ -104,9 +100,6 @@ int main(int argc, char **argv)
 
     for (i = 0; i < delcnt; ++i) {
         key = ngx_hash_key_lc(tokens[i].data, tokens[i].len);
-        if (key < 0) {
-            key *= -1;
-        }
 
         ret = lru->delete(lru, key, &tokens[i]);
         if (ret == NULL) {
@@ -153,9 +146,6 @@ int main(int argc, char **argv)
     /* single get time test */
 
     key = ngx_hash_key_lc(copy_t.data, copy_t.len);
-    if (key < 0) {
-        key *= -1;
-    }
 
     gettimeofday(&t1, NULL);
     info = lru->get(lru, key, &copy_t);
@@ -165,9 +155,7 @@ int main(int argc, char **argv)
 
     copy_t.data[0] = '#';
     key = ngx_hash_key_lc(copy_t.data, copy_t.len);
-    if (key < 0) {
-        key *= -1;
-    }
+
     info = lru->get(lru, key, &copy_t);
     if (info != NULL) {
         printf("get test failed, line=%d\n", __LINE__);
@@ -221,7 +209,7 @@ static void print_lru(mcdn_lru_t *lru)
 
             info = (mcdn_auth_info_t*) bn->value;
 
-            printf("key=%d key_name='%.*s' list_node=%p info->valid=%d\n", 
+            printf("key=%u key_name='%.*s' list_node=%p info->valid=%d\n", 
                 bn->key, (int) bn->key_name.len, bn->key_name.data, bn->list_elt, info->valid);
 
             q = ngx_queue_next(q);

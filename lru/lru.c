@@ -6,9 +6,9 @@
 #include <string.h>
 #include "lru.h"
 
-static void* mcdn_lru_set(mcdn_lru_t *lru, int key, ngx_str_t *key_name, void *value);
-static void* mcdn_lru_get(mcdn_lru_t *lru, int key, ngx_str_t *key_name);
-static void* mcdn_lru_delete(mcdn_lru_t *lru, int key, ngx_str_t *key_name);
+static void* mcdn_lru_set(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name, void *value);
+static void* mcdn_lru_get(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name);
+static void* mcdn_lru_delete(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name);
 
 mcdn_lru_t* mcdn_lru_init(int capacity, int bucket_size)
 {
@@ -49,7 +49,7 @@ mcdn_lru_t* mcdn_lru_init(int capacity, int bucket_size)
 
 /* return the old value pointer if it remove from lru, or new value pointer on seccess
    or NULL on error */
-static void* mcdn_lru_set(mcdn_lru_t *lru, int key, ngx_str_t *key_name, void *value)
+static void* mcdn_lru_set(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name, void *value)
 {
     ngx_queue_t *head, *q;
     mcdn_lru_bucket_elt_t *bucket_node;
@@ -108,7 +108,7 @@ error:
     return NULL;
 }
 
-static void* mcdn_lru_get(mcdn_lru_t *lru, int key, ngx_str_t *key_name)
+static void* mcdn_lru_get(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name)
 {
     ngx_queue_t *head, *q;
     mcdn_lru_bucket_elt_t *bucket_node;
@@ -144,7 +144,7 @@ static void* mcdn_lru_get(mcdn_lru_t *lru, int key, ngx_str_t *key_name)
     return NULL;
 }
 
-static void* mcdn_lru_delete(mcdn_lru_t *lru, int key, ngx_str_t *key_name)
+static void* mcdn_lru_delete(mcdn_lru_t *lru, unsigned int key, ngx_str_t *key_name)
 {
     void *ret;
     ngx_queue_t *head, *q;

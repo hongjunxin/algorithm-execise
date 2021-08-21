@@ -8,6 +8,6 @@
 
 #define ngx_hash(key, c)   ((unsigned) key * 31 + c)
 
-int ngx_hash_key_lc(char *data, size_t len);
+unsigned int ngx_hash_key_lc(char *data, size_t len);
 
 #endif

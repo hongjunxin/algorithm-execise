@@ -1,8 +1,8 @@
 #include <hash.h>
 
-int ngx_hash_key_lc(char *data, size_t len)
+unsigned int ngx_hash_key_lc(char *data, size_t len)
 {
-    int  i, key;
+    unsigned int  i, key;
 
     key = 0;
 
