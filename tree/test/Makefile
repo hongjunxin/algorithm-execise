@@ -7,5 +7,10 @@ SRC= \
 
 INC= -I$(SRC_POOL_DIR) -I../
 
-all:
+all: radix_tree_test  rbtree_test
+
+radix_tree_test: radix_tree_test.c $(SRC)
 	gcc $(INC) $(SRC) radix_tree_test.c -o radix_tree_test
+
+rbtree_test: rbtree_test.c ../ngx_rbtree.c
+	gcc $(INC) ../ngx_rbtree.c rbtree_test.c -o rbtree_test
